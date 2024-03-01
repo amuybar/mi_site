@@ -1,19 +1,7 @@
 // serverless-functions/submit-form.js
 const nodemailer = require('nodemailer');
-const cors = require('cors');
 
-// Enable CORS for serverless function
-const corsMiddleware = cors({
-  origin: 'http://localhost:3000',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-  optionsSuccessStatus: 204,
-});
-
-exports.handler = async function (event, context) {
-  // Apply CORS middleware
-  await corsMiddleware(event, context);
-
+exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -21,6 +9,7 @@ exports.handler = async function (event, context) {
     };
   }
 
+  // Parse the JSON body
   const { name, email, message } = JSON.parse(event.body);
 
   // Configure Nodemailer
@@ -47,7 +36,12 @@ exports.handler = async function (event, context) {
 
     return {
       statusCode: 200,
-      body: 'Form submitted successfully',
+      body: JSON.stringify({ message: 'Form submitted successfully' }),
+      headers: {
+        'Access-Control-Allow-Origin': '*', 
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST',
+      },
     };
   } catch (error) {
     console.error('Error sending email:', error);
@@ -55,6 +49,11 @@ exports.handler = async function (event, context) {
     return {
       statusCode: 500,
       body: 'Internal Server Error',
+      headers: {
+        'Access-Control-Allow-Origin': '*', 
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST',
+      },
     };
   }
 };
